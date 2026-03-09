@@ -8,7 +8,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from fredapi import Fred
 import yfinance as yf
-from config import INDICATORS, FRED_API_KEY
+from config import INDICATORS, REGIONAL_INDICATORS, FRED_API_KEY
 
 
 def get_fred_client() -> Fred:
@@ -147,15 +147,73 @@ def build_indicator_table(raw_data: dict[str, pd.Series]) -> pd.DataFrame:
     return df
 
 
+# ── Regional Data Pipeline ────────────────────────────────────────────────────
+
+def fetch_all_regional_indicators() -> dict[str, pd.Series]:
+    """
+    Pull all regional indicator time series.
+    Converts CPI index series to YoY % where flagged in config.
+    """
+    fred = get_fred_client()
+    raw_data = {}
+
+    for key, meta in REGIONAL_INDICATORS.items():
+        try:
+            series = fetch_fred_series(fred, meta["ticker"])
+
+            # Convert CPI index levels to YoY % change
+            if meta.get("convert_yoy", False):
+                series = compute_cpi_yoy(series)
+
+            raw_data[key] = series
+            print(f"  [OK] {meta['name']} — {len(series)} observations")
+        except Exception as e:
+            print(f"  [FAIL] {meta['name']}: {e}")
+            raw_data[key] = pd.Series(dtype=float)
+
+    return raw_data
+
+
+def build_regional_table(raw_data: dict[str, pd.Series]) -> pd.DataFrame:
+    """
+    Build summary table for regional indicators with columns:
+    key | indicator | region | current | change_3m | change_12m | trend_5y
+    """
+    rows = []
+    for key, series in raw_data.items():
+        meta = REGIONAL_INDICATORS[key]
+        trends = calculate_trends(series)
+        rows.append(
+            {
+                "key": key,
+                "indicator": meta["name"],
+                "region": meta["region"],
+                "current": trends["current"],
+                "change_3m": trends["change_3m"],
+                "change_12m": trends["change_12m"],
+                "trend_5y": trends["trend_5y"],
+            }
+        )
+
+    return pd.DataFrame(rows)
+
+
 # ── Main convenience function ────────────────────────────────────────────────
 
-def run_pipeline() -> tuple[pd.DataFrame, dict[str, pd.Series]]:
+def run_pipeline() -> tuple[pd.DataFrame, dict[str, pd.Series], pd.DataFrame, dict[str, pd.Series]]:
     """
-    Full pipeline: fetch data → compute trends → return summary table + raw series.
+    Full pipeline: fetch data → compute trends → return summary tables + raw series.
+    Returns (us_table, us_raw, regional_table, regional_raw).
     """
-    print("Fetching macro data...")
+    print("Fetching US macro data...")
     raw = fetch_all_indicators()
-    print("\nBuilding indicator table...")
+    print("\nBuilding US indicator table...")
     table = build_indicator_table(raw)
+
+    print("\nFetching regional macro data...")
+    regional_raw = fetch_all_regional_indicators()
+    print("\nBuilding regional indicator table...")
+    regional_table = build_regional_table(regional_raw)
+
     print("Pipeline complete.\n")
-    return table, raw
+    return table, raw, regional_table, regional_raw

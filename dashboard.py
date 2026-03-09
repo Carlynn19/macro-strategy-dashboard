@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from data_pipeline import run_pipeline, resample_monthly
 from signals import run_signal_engine
-from config import INDICATORS, PORTFOLIO_IMPLICATIONS
+from config import INDICATORS, REGIONAL_INDICATORS, REGIONS, PORTFOLIO_IMPLICATIONS
 
 
 # ── Page Config ──────────────────────────────────────────────────────────────
@@ -40,9 +40,9 @@ st.markdown("""
 # ── Data Loading (cached) ───────────────────────────────────────────────────
 @st.cache_data(ttl=3600, show_spinner="Pulling macro data...")
 def load_data():
-    table, raw = run_pipeline()
+    table, raw, regional_table, regional_raw = run_pipeline()
     scored, pillars, regime = run_signal_engine(table)
-    return scored, pillars, regime, raw
+    return scored, pillars, regime, raw, regional_table, regional_raw
 
 
 # ── Helper Functions ─────────────────────────────────────────────────────────
@@ -118,7 +118,7 @@ def main():
 
     # Load data
     try:
-        scored_df, pillar_scores, regime, raw_series = load_data()
+        scored_df, pillar_scores, regime, raw_series, regional_table, regional_raw = load_data()
     except Exception as e:
         st.error(f"Data loading failed: {e}")
         st.info("Make sure your FRED API key is set in `config.py`.")
@@ -178,7 +178,47 @@ def main():
                 else:
                     st.info(f"No data for {INDICATORS[key]['name']}")
 
-    # ── Section 5: Portfolio Implications ────────────────────────────────────
+    # ── Section 5: Regional Macro Monitor ────────────────────────────────────
+    st.header("Regional Macro Monitor")
+    st.caption("Key macro indicators across major global economies")
+
+    region_tabs = st.tabs(REGIONS)
+    for tab, region in zip(region_tabs, REGIONS):
+        with tab:
+            # Filter regional data for this region
+            region_df = regional_table[regional_table["region"] == region].copy()
+            region_keys = [k for k, v in REGIONAL_INDICATORS.items() if v["region"] == region]
+
+            if not region_df.empty:
+                # Summary table
+                disp = region_df.rename(columns={
+                    "indicator": "Indicator",
+                    "current": "Current",
+                    "change_3m": "3M Change",
+                    "change_12m": "12M Change",
+                    "trend_5y": "5Y Trend",
+                })
+                st.dataframe(
+                    disp[["Indicator", "Current", "3M Change", "12M Change", "5Y Trend"]],
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+                # Trend charts — one per indicator, side by side
+                chart_cols = st.columns(len(region_keys))
+                for j, key in enumerate(region_keys):
+                    with chart_cols[j]:
+                        if key in regional_raw and not regional_raw[key].empty:
+                            st.plotly_chart(
+                                trend_chart(regional_raw[key], REGIONAL_INDICATORS[key]["name"]),
+                                use_container_width=True,
+                            )
+                        else:
+                            st.info(f"No data for {REGIONAL_INDICATORS[key]['name']}")
+            else:
+                st.info(f"No data available for {region}")
+
+    # ── Section 6: Portfolio Implications ────────────────────────────────────
     st.header("Portfolio Implications")
     st.caption(f"Recommended positioning under **{regime}** regime")
 

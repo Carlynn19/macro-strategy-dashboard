@@ -121,6 +121,155 @@ INDICATORS = {
     },
 }
 
+# ── Regional Macro Indicators ────────────────────────────────────────────────
+# Displayed in a separate "Regional Macro Monitor" section.
+# Not scored — these provide context, not regime signals.
+
+REGIONS = ["South Africa", "Eurozone", "United Kingdom", "Japan", "China"]
+
+REGIONAL_INDICATORS = {
+    # ── South Africa ─────────────────────────────────────────────────────────
+    "sa_leading": {
+        "name": "SA Leading Indicator",
+        "region": "South Africa",
+        "source": "fred",
+        "ticker": "ZAFLOLITOAASTSAM",
+        "description": "OECD Composite Leading Indicator for South Africa",
+        "frequency": "Monthly",
+        "convert_yoy": False,
+    },
+    "sa_cpi": {
+        "name": "SA CPI YoY",
+        "region": "South Africa",
+        "source": "fred",
+        "ticker": "CPALTT01ZAM659N",
+        "description": "South Africa CPI — year-over-year growth rate",
+        "frequency": "Monthly",
+        "convert_yoy": False,
+    },
+    "sa_10y": {
+        "name": "SA 10Y Bond Yield",
+        "region": "South Africa",
+        "source": "fred",
+        "ticker": "IRLTLT01ZAM156N",
+        "description": "South Africa long-term government bond yield",
+        "frequency": "Monthly",
+        "convert_yoy": False,
+    },
+    # ── Eurozone ─────────────────────────────────────────────────────────────
+    "eu_gdp": {
+        "name": "Eurozone Real GDP",
+        "region": "Eurozone",
+        "source": "fred",
+        "ticker": "CLVMNACSCAB1GQEA19",
+        "description": "Eurozone real GDP (chain-linked volumes, SA)",
+        "frequency": "Quarterly",
+        "convert_yoy": False,
+    },
+    "eu_cpi": {
+        "name": "Eurozone CPI",
+        "region": "Eurozone",
+        "source": "fred",
+        "ticker": "CP0000EZ19M086NEST",
+        "description": "Eurozone HICP all items index — converted to YoY %",
+        "frequency": "Monthly",
+        "convert_yoy": True,
+    },
+    "eu_10y": {
+        "name": "Eurozone 10Y Bond Yield",
+        "region": "Eurozone",
+        "source": "fred",
+        "ticker": "IRLTLT01EZM156N",
+        "description": "Eurozone long-term government bond yield (avg)",
+        "frequency": "Monthly",
+        "convert_yoy": False,
+    },
+    # ── United Kingdom ───────────────────────────────────────────────────────
+    "uk_gdp": {
+        "name": "UK GDP",
+        "region": "United Kingdom",
+        "source": "fred",
+        "ticker": "NGDPRSAXDCGBQ",
+        "description": "UK real GDP (SA, domestic currency)",
+        "frequency": "Quarterly",
+        "convert_yoy": False,
+    },
+    "uk_cpi": {
+        "name": "UK CPI YoY",
+        "region": "United Kingdom",
+        "source": "fred",
+        "ticker": "CPALTT01GBM659N",
+        "description": "UK CPI — year-over-year growth rate",
+        "frequency": "Monthly",
+        "convert_yoy": False,
+    },
+    "uk_10y": {
+        "name": "UK 10Y Gilt Yield",
+        "region": "United Kingdom",
+        "source": "fred",
+        "ticker": "IRLTLT01GBM156N",
+        "description": "UK long-term government bond yield",
+        "frequency": "Monthly",
+        "convert_yoy": False,
+    },
+    # ── Japan ────────────────────────────────────────────────────────────────
+    "jp_gdp": {
+        "name": "Japan Real GDP",
+        "region": "Japan",
+        "source": "fred",
+        "ticker": "JPNRGDPEXP",
+        "description": "Japan real GDP expenditure approach (SA)",
+        "frequency": "Quarterly",
+        "convert_yoy": False,
+    },
+    "jp_cpi": {
+        "name": "Japan CPI YoY",
+        "region": "Japan",
+        "source": "fred",
+        "ticker": "FPCPITOTLZGJPN",
+        "description": "Japan CPI — annual year-over-year inflation rate",
+        "frequency": "Annual",
+        "convert_yoy": False,
+    },
+    "jp_10y": {
+        "name": "Japan 10Y JGB Yield",
+        "region": "Japan",
+        "source": "fred",
+        "ticker": "IRLTLT01JPM156N",
+        "description": "Japan long-term government bond yield",
+        "frequency": "Monthly",
+        "convert_yoy": False,
+    },
+    # ── China ────────────────────────────────────────────────────────────────
+    "cn_gdp": {
+        "name": "China GDP",
+        "region": "China",
+        "source": "fred",
+        "ticker": "MKTGDPCNA646NWDB",
+        "description": "China GDP (current USD, annual)",
+        "frequency": "Annual",
+        "convert_yoy": False,
+    },
+    "cn_cpi": {
+        "name": "China CPI",
+        "region": "China",
+        "source": "fred",
+        "ticker": "CHNCPIALLMINMEI",
+        "description": "China CPI all items index — converted to YoY %",
+        "frequency": "Monthly",
+        "convert_yoy": True,
+    },
+    "cn_rate": {
+        "name": "China 3M Interbank Rate",
+        "region": "China",
+        "source": "fred",
+        "ticker": "IR3TIB01CNM156N",
+        "description": "China 3-month interbank offered rate",
+        "frequency": "Monthly",
+        "convert_yoy": False,
+    },
+}
+
 # ── Signal Classification Thresholds ─────────────────────────────────────────
 # Each rule: (indicator_key, field, condition, threshold, signal_value)
 # field: "value" = current level, "change_3m" = 3-month change, etc.
