@@ -11,7 +11,7 @@ import os
 # For Streamlit Cloud, add to Settings → Secrets.
 try:
     import streamlit as st
-    FRED_API_KEY = st.secrets.get("FRED_API_KEY", os.environ.get("FRED_API_KEY", ""))
+    FRED_API_KEY = st.secrets["FRED_API_KEY"]
 except Exception:
     FRED_API_KEY = os.environ.get("FRED_API_KEY", "")
 
